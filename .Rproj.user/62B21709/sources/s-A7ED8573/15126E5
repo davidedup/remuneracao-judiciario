@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1586897164896.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "15126E5",
+    "lastKnownWriteTime" : 312778800,
+    "last_content_update" : 312778800,
+    "path" : "~/Área de Trabalho/tcc/dados/2018-1-datapackage/datapackage.json",
+    "project_path" : "dados/2018-1-datapackage/datapackage.json",
+    "properties" : {
+        "cursorPosition" : "0,1119",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "json"
+}

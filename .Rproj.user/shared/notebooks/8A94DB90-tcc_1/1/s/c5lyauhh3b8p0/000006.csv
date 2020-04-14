@@ -1,0 +1,12 @@
+"0","dados_12_2016 = read_csv(here(""dados/2016-12-datapackage/data.csv""),  col_types = ""ccccddddddddddddddddddddddddcdddddddddcdddc"")"
+"2","2717 parsing failures.
+row                   col expected actual                                                                  file
+  1 indenizacoes_detalhes a double      | '/home/david/Área de Trabalho/tcc/dados/2016-12-datapackage/data.csv'
+  2 indenizacoes_detalhes a double      | '/home/david/Área de Trabalho/tcc/dados/2016-12-datapackage/data.csv'
+  3 indenizacoes_detalhes a double      | '/home/david/Área de Trabalho/tcc/dados/2016-12-datapackage/data.csv'
+  4 indenizacoes_detalhes a double      | '/home/david/Área de Trabalho/tcc/dados/2016-12-datapackage/data.csv'
+  5 indenizacoes_detalhes a double      | '/home/david/Área de Trabalho/tcc/dados/2016-12-datapackage/data.csv'
+... ..................... ........ ...... .....................................................................
+See problems(...) for more details.
+"
+"0","dados_12_2016"
