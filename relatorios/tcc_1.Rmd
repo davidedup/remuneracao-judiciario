@@ -1,22 +1,92 @@
 ---
-title: "tcc"
-output: html_document
+title: "TCC: Remuneração dos sistema judiciário brasileiro"
+
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    css: '/home/david/Área de Trabalho/tcc/stylesheets/style.css'
+    highlight: github
+    df_print: paged
 ---
 
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(here)
+library(kableExtra)
 theme_set(theme_bw())
 ```
 
-#Lendo dados
+# Lendo dados
 
-```{r}
-dados_12_2016 = read_csv(here("dados/2016-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
+### 2016
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+dados_2016 = read_csv(here("dados/2016-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
+dados_2016 <- dados_2016 %>% mutate(mes = 12) %>% mutate(ano = 2016)
+summary(dados_2016)
 
-dados_12_2016
+kable(dados_2016[1:20,]) 
+```
+
+### 2017
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+dados_11_2017 = read_csv(here("dados/2017-11-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
+dados_11_2017 <- dados_11_2017 %>% mutate(mes = 11) %>% mutate(ano = 2017)
+
+dados_12_2017 = read_csv(here("dados/2017-11-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
+
+dados_12_2017 <- dados_12_2017 %>% mutate(mes = 12) %>% mutate(ano = 2017)
 
 
+dados_2017 <- bind_rows(dados_11_2017, dados_12_2017)
+
+summary(dados_2017)
+```
+### 2018
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+dados_1_2018 = read_csv(here("dados/2018-1-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 1) %>% mutate(ano = 2018)
+
+dados_2_2018 = read_csv(here("dados/2018-2-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 2) %>% mutate(ano = 2018)
+
+dados_3_2018 = read_csv(here("dados/2018-3-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 3) %>% mutate(ano = 2018)
+
+dados_4_2018 = read_csv(here("dados/2018-4-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 4) %>% mutate(ano = 2018)
+
+dados_5_2018 = read_csv(here("dados/2018-5-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 5) %>% mutate(ano = 2018)
+
+dados_6_2018 = read_csv(here("dados/2018-6-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 6) %>% mutate(ano = 2018)
+
+dados_7_2018 = read_csv(here("dados/2018-7-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 7) %>% mutate(ano = 2018)
+
+dados_8_2018 = read_csv(here("dados/2018-8-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 8) %>% mutate(ano = 2018)
+
+dados_9_2018 = read_csv(here("dados/2018-9-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 9) %>% mutate(ano = 2018)
+
+dados_10_2018 = read_csv(here("dados/2018-10-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 10) %>% mutate(ano = 2018)
+
+dados_11_2018 = read_csv(here("dados/2018-11-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 11) %>% mutate(ano = 2018)
+
+dados_12_2018 = read_csv(here("dados/2018-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 12) %>% mutate(ano = 2018)
+
+
+dados_2018 <- bind_rows(dados_1_2018, dados_2_2018, dados_3_2018, dados_4_2018, dados_5_2018, dados_6_2018, dados_7_2018, dados_9_2018, dados_10_2018, dados_11_2018, dados_12_2018)
+
+summary(dados_2018)
+```
+
+### 2019
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+
+dados_1_2019 = read_csv(here("dados/2019-1-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 1) %>% mutate(ano = 2019)
+
+dados_2_2019 = read_csv(here("dados/2019-2-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 2) %>% mutate(ano = 2019)
+
+dados_12_2019 = read_csv(here("dados/2019-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc") %>% mutate(mes = 12) %>% mutate(ano = 2019)
+
+dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
+
+summary(dados_2019)
 ```
 
