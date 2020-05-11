@@ -46,7 +46,7 @@ dados_2016 %>%
   scale_color_brewer(palette = "Set2") +
   scale_y_log10(labels = scales::comma, breaks=c(5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
   ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.7,position=position_jitter(0.2)) +
-  stat_summary(fun.y = mean, colour = "#F25E4B", geom = "point", size = 3) 
+  stat_summary(fun.y = mean, colour = "#F25E4B", geom = "point", size = 3) +
   labs(x="", y = "Salário", title = "Distribuição dos salários recebido pelos magistrados em dezembro de 2016") 
 
 
@@ -70,7 +70,7 @@ dados_2016 %>%
   scale_color_brewer(palette = "Set2") +
   scale_y_log10(labels = scales::comma, breaks=c(5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
   ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.7,position=position_jitter(0.2)) +
-  stat_summary(fun.y = mean, colour = "#000000", geom = "point", size = 3) 
+  stat_summary(fun.y = mean, colour = "#000000", geom = "point", size = 3) +
   labs(x="", y = "Salário", title = "Distribuição dos salários de acordo com o genêro em dezembro de 2016") 
 
 
