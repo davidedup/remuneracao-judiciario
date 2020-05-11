@@ -15,18 +15,73 @@ library(tidyverse)
 library(here)
 library(kableExtra)
 theme_set(theme_bw())
+library(genderBR)
+options(scipen=999)
 ```
 
-# Lendo dados
+## Descrição dos dados
+* subsidio = Salário recebido pelo magistrado
+* direitos_pessoais = Total recebido através de direitos pessoais       
+* indenizações = Total recebido através de indenizações
+* direitos_eventuais = Total recebido através de direitos eventuais
+* total_descontos = Somatório de todos os descontos aplicados à remuneração do Magistrado
+* rendimento_liquido = Subsídios + Adicionais - Descontos
+
+# Como são as remunerações dos magistrados:
 
 ### 2016
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 dados_2016 = read_csv(here("dados/2016-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
 dados_2016 <- dados_2016 %>% mutate(mes = 12) %>% mutate(ano = 2016)
-summary(dados_2016)
-
-kable(dados_2016[1:20,]) 
+dados_2016$genero <- get_gender(dados_2016$nome)
 ```
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+#Distribuição dos salários
+dados_2016 %>%
+  ggplot(aes(x=" ", y=subsidio)) +
+  geom_violin() +
+  theme_minimal() + 
+  scale_color_brewer(palette = "Set2") +
+  scale_y_log10(labels = scales::comma, breaks=c(5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
+  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.7,position=position_jitter(0.2)) +
+  stat_summary(fun.y = mean, colour = "#F25E4B", geom = "point", size = 3) 
+  labs(x="", y = "Salário", title = "Distribuição dos salários recebido pelos magistrados em dezembro de 2016") 
+
+
+salario_min_2016 <- dados_2016 %>%  filter(subsidio > 0) %>% pull(subsidio) %>% min()
+salario_max_2016 <- dados_2016 %>%pull(subsidio) %>% max()
+mediana_salarial_2016 <- dados_2016 %>%pull(subsidio) %>% median() %>% round(2)
+media_salarial_2016 <- dados_2016 %>%pull(subsidio) %>% mean() %>% round(2)
+```
+
+Analisando o ano de 2016 podemos observar que o salário mais baixo recebido foi de **`r salario_min_2016`** por uma pensionista do	Tribunal de Justiça do Estado do Acre isso é equivalente a 5,75 salários mínimos. Já o salário mais alto foi de **`r salario_max_2016`** recebido por uma desembargadora federal do trabalho, esse valor é equivalente a 66,4 salários mínimos.  
+
+A média salarial foi de **`r media_salarial_2016`** com uma mediana de **`r mediana_salarial_2016`** 
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+#Distribuição dos salários
+dados_2016 %>%
+  drop_na(genero) %>% 
+  ggplot(aes(x=genero, y=subsidio, color=genero)) +
+  geom_violin() +
+  theme_minimal() + 
+  scale_color_brewer(palette = "Set2") +
+  scale_y_log10(labels = scales::comma, breaks=c(5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
+  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.7,position=position_jitter(0.2)) +
+  stat_summary(fun.y = mean, colour = "#000000", geom = "point", size = 3) 
+  labs(x="", y = "Salário", title = "Distribuição dos salários de acordo com o genêro em dezembro de 2016") 
+
+
+total_homem <- dados_2016 %>% drop_na(genero) %>% filter(genero == "Male") %>% count() %>%  pull(n)
+total_mulher <- dados_2016 %>% drop_na(genero) %>% filter(genero == "Female") %>% count() %>%  pull(n)
+media_salarial_mulher_2016 <- dados_2016 %>% drop_na(genero) %>% filter(genero == "Female") %>% pull(subsidio) %>%  mean() %>% round(2)
+media_salarial_homem_2016 <- dados_2016 %>% drop_na(genero) %>% filter(genero == "Male") %>% pull(subsidio)  %>% mean() %>% round(2)
+
+```
+
+O total de funcionárias é de **`r total_mulher`**, enquanto o de funcionários é de **`r total_homem`**. Existem o dobro de funcionários do que de funcionárias no sistema de justiça brasileiro em dezembro de 2016. A média salárial para as mulheres é de **`r media_salarial_mulher_2016`** e para os homems é de **`r media_salarial_homem_2016`**.  
 
 ### 2017
 
@@ -38,10 +93,9 @@ dados_12_2017 = read_csv(here("dados/2017-11-datapackage/data.csv"),  col_types 
 
 dados_12_2017 <- dados_12_2017 %>% mutate(mes = 12) %>% mutate(ano = 2017)
 
-
 dados_2017 <- bind_rows(dados_11_2017, dados_12_2017)
 
-summary(dados_2017)
+#summary(dados_2017)
 ```
 ### 2018
 
@@ -73,7 +127,7 @@ dados_12_2018 = read_csv(here("dados/2018-12-datapackage/data.csv"),  col_types 
 
 dados_2018 <- bind_rows(dados_1_2018, dados_2_2018, dados_3_2018, dados_4_2018, dados_5_2018, dados_6_2018, dados_7_2018, dados_9_2018, dados_10_2018, dados_11_2018, dados_12_2018)
 
-summary(dados_2018)
+#summary(dados_2018)
 ```
 
 ### 2019
@@ -87,6 +141,6 @@ dados_12_2019 = read_csv(here("dados/2019-12-datapackage/data.csv"),  col_types 
 
 dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
 
-summary(dados_2019)
+#summary(dados_2019)
 ```
 
