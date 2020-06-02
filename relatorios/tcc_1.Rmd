@@ -19,7 +19,26 @@ library(genderBR)
 options(scipen=999)
 ```
 
+# Dados do Sistema de Justiça Brasileiro
+
+A Lei Federal 12.527/2011, ou mais comumente conhecida como Lei de Acesso à Informação (LAI), diz que é “obrigatória a divulgação em sítios oficiais da rede mundial de computadores (internet)” dos dados de gastos públicos. Por isso, órgãos que fazem parte do sistema de justiça periodicamente disponibilizam em seus sites informações detalhada sobre seus gastos, que são disponíveis para todos. Uma parte importante desses gastos são as remunerações dos trabalhadores e trabalhadoras desses órgãos.
+Os agentes públicos do sistema de justiça brasileiro recebem outras verbas, além de seus salários, para exercerem seus cargos. Dentre elas encontramos auxílio moradia, despesas com saúde, auxílio transporte, gratificações, diárias, entre outros benefícios. Dados detalhados sobre essas remunerações devem ser disponibilizados nos sites de cada órgão. 
+Devido a grande quantidade de auxílios é importante ter um controle sobre esses gastos e verificar a moralidade e legitimidades do recebimento desses benefícios.
+
+## Remunerção x salário
+
+As remunerações¹ incluem valores que vão além do salário². Os conhecidos auxílios ou indenizações, são gastos eventuais que podem constituir as remunerações. Auxílios como alimentação, pré escolar, saúde, natalidade, moradia e ajuda de custo, são exemplos de indenizações que podem ser recebidas por funcionários dos tribunais e ministérios públicos do Brasil
+
+* ¹Remuneração: é a soma do salário mais outras vantagens (indenizações e auxílios).
+
+* ²Salário: valor recebido de acordo com a prestação de serviços, em decorrência do contrato de trabalho.
+
 ## Descrição dos dados
+
+Os dados utilizados nessa análise foram conseguidos através da iniciativa do DadosJusBR, que teve início no Hackfest (2018) e até hoje desenvolve trabalhos de libertação dos dados de remuneração do sistema de justiça brasileiro.  
+
+Abaixo temos um descrição das principais variáveis que estão disponíveis nos dados:
+
 * subsidio = Salário recebido pelo magistrado
 * direitos_pessoais = Total recebido através de direitos pessoais       
 * indenizações = Total recebido através de indenizações
