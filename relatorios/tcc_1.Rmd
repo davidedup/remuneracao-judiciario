@@ -163,3 +163,13 @@ dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
 #summary(dados_2019)
 ```
 
+
+### Planos
+
+* Grafico de barras stacked para ver o quanto de gasta com indenização salario e outros
+* Mostrar média salaria por mês do sistema de justiça x executivo x legislativo
+* Ditribuição dos auxilios, quais os mais utilizados? quais os que são mais gatos?
+* distribuição das remunerção e descrever alguns outiliers
+* Média salarial comparada com algumas outras profissões
+* Questões de genêro
+
