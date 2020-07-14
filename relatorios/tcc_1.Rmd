@@ -45,6 +45,7 @@ Abaixo temos um descrição das principais variáveis que estão disponíveis no
 * direitos_eventuais = Total recebido através de direitos eventuais
 * total_descontos = Somatório de todos os descontos aplicados à remuneração do Magistrado
 * rendimento_liquido = Subsídios + Adicionais - Descontos
+* tottal_de_rendimentos = Total de rendimentos do Magistrado"
 
 # Como são as remunerações dos magistrados:
 
@@ -102,6 +103,65 @@ media_salarial_homem_2016 <- dados_2016 %>% drop_na(genero) %>% filter(genero ==
 
 O total de funcionárias é de **`r total_mulher`**, enquanto o de funcionários é de **`r total_homem`**. Existem o dobro de funcionários do que de funcionárias no sistema de justiça brasileiro em dezembro de 2016. A média salárial para as mulheres é de **`r media_salarial_mulher_2016`** e para os homems é de **`r media_salarial_homem_2016`**.  
 
+# Remuneração de acordo com cargo
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+library(stringr)
+cargos_normalizados <- dados_2016 %>% 
+  mutate( cargo_nomarlizado =
+    case_when(
+      str_detect(str_to_lower(cargo), "desembargador") ~ "Desembargador",
+      str_detect(str_to_lower(cargo), "juiz") ~ "Juiz", 
+      str_detect(str_to_lower(cargo), "pensionista") ~ "Pensionista",
+      TRUE ~"Outros"
+    )
+  )
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+cargos_normalizados %>%
+  ggplot(aes(x=cargo_nomarlizado, y=total_de__rendimentos, color=cargo_nomarlizado )) +
+  geom_violin() +
+  theme_minimal() + 
+  scale_y_log10(labels = scales::comma, breaks=c(5000, 10000, 20000, 35000, 50000, 80000, 150000, 250000)) + 
+  scale_color_brewer(palette = "Set2") +
+  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo  de funcionário", y = "Remuneração",       title = "Distribuição das remunerações de acordo com o cargo em 2016") 
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+media_remuneracao_2016_desembargador <- cargos_normalizados %>% 
+  filter(cargo_nomarlizado == "Desembargador")  %>% 
+  pull(total_de__rendimentos) %>% mean() %>% round(2)
+
+media_remuneracao_2016_juiz <- cargos_normalizados %>% 
+  filter(cargo_nomarlizado == "Juiz")  %>% 
+  pull(total_de__rendimentos) %>% mean() %>% round(2)
+
+media_remuneracao_2016_pensionista <- cargos_normalizados %>% 
+  filter(cargo_nomarlizado == "Pensionista")  %>% 
+  pull(total_de__rendimentos) %>% mean() %>% round(2)
+```
+A média de remunerção de acordo com cada cargo tem a seguinte distribuição: 
+
+- A média de remuneração de um juiz em 2016 foi de:  **`r media_remuneracao_2016_juiz`**
+- A média de remuneração de um desembargador em 2016 foi de:  **`r media_remuneracao_2016_desembargador`**
+- A média de remuneração de um pensionitsa em 2016 foi de:  **`r media_remuneracao_2016_pensionista`**
+
+# Os valores gastos com auxílios e benefícios são maiores que os de salários.
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+# Stacked barchart
+stacked_bar_chart <- dados_2016 %>%
+  mutate(`Salário` = subsidio, `Beneficios` = total_de__rendimentos - subsidio) %>% 
+  gather(key="type", value = "value", `Salário`, `Beneficios`) %>% 
+  select(value, total_de__rendimentos, type, mes)
+
+stacked_bar_chart %>% 
+    ggplot(aes(fill=type, y=total_de__rendimentos, x=as.factor(mes))) +
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_brewer(palette = "Set2") + theme_minimal() +
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2016" ) +
+    scale_y_continuous(labels = scales::comma) 
+``` 
+
 ### 2017
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
@@ -113,9 +173,8 @@ dados_12_2017 = read_csv(here("dados/2017-11-datapackage/data.csv"),  col_types 
 dados_12_2017 <- dados_12_2017 %>% mutate(mes = 12) %>% mutate(ano = 2017)
 
 dados_2017 <- bind_rows(dados_11_2017, dados_12_2017)
-
-#summary(dados_2017)
 ```
+
 ### 2018
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
