@@ -14,6 +14,7 @@ output:
 library(tidyverse)
 library(here)
 library(kableExtra)
+library(ggplot2)
 theme_set(theme_bw())
 library(genderBR)
 options(scipen=999)
@@ -37,7 +38,7 @@ As remunerações¹ incluem valores que vão além do salário². Os conhecidos 
 
 Os dados utilizados nessa análise foram conseguidos através da iniciativa do DadosJusBR, que teve início no Hackfest (2018) e até hoje desenvolve trabalhos de libertação dos dados de remuneração do sistema de justiça brasileiro.  
 
-Abaixo temos um descrição das principais variáveis que estão disponíveis nos dados:
+Abaixo temos uma descrição das principais variáveis que estão disponíveis nos dados:
 
 * subsidio = Salário recebido pelo magistrado
 * direitos_pessoais = Total recebido através de direitos pessoais       
@@ -103,7 +104,7 @@ media_salarial_homem_2016 <- dados_2016 %>% drop_na(genero) %>% filter(genero ==
 
 O total de funcionárias é de **`r total_mulher`**, enquanto o de funcionários é de **`r total_homem`**. Existem o dobro de funcionários do que de funcionárias no sistema de justiça brasileiro em dezembro de 2016. A média salárial para as mulheres é de **`r media_salarial_mulher_2016`** e para os homems é de **`r media_salarial_homem_2016`**.  
 
-# Remuneração de acordo com cargo
+### Remuneração de acordo com cargo
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 library(stringr)
 cargos_normalizados <- dados_2016 %>% 
@@ -118,6 +119,43 @@ cargos_normalizados <- dados_2016 %>%
 ```
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+total_juiz = cargos_normalizados %>% filter(cargo_nomarlizado == "Juiz") %>% nrow()
+total_desembagador = cargos_normalizados %>% filter(cargo_nomarlizado == "Desembargador") %>% nrow()
+total_pensionista = cargos_normalizados %>% filter(cargo_nomarlizado == "Pensionista") %>% nrow()
+
+# Create test data.
+data <- data.frame(
+  category=c("Juiz", "Desembargador", "Pensionista"),
+  count=c(total_juiz, total_desembagador, total_pensionista)
+)
+ 
+# Compute percentages
+data$fraction <- (data$count / sum(data$count)) * 100
+# Compute the cumulative percentages (top of each rectangle)
+data$ymax <- cumsum(data$fraction)
+# Compute the bottom of each rectangle
+data$ymin <- c(0, head(data$ymax, n=-1))
+# Compute label position
+data$labelPosition <- (data$ymax + data$ymin) / 2
+# Compute a good label
+data$label <- paste0(data$category, "\n", round(data$fraction, digits = 0), "%")
+# Make the plot
+ggplot(data, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=category)) +
+  geom_rect() +
+  geom_text(x=3.5, aes(y=labelPosition, label=label, color=category), color = "white", size=3.2) + # x here controls label position (inner / outer)
+  scale_fill_brewer(palette = "Set2") + theme_minimal() +
+  scale_color_brewer(palette = "Set2") +
+  coord_polar(theta="y") +
+  xlim(c(1.8, 4)) +
+  theme_void() + 
+  labs(fill = "Cargo", title="Juizes são 80% dos funcionários em 2016") +
+  theme(legend.position = "none")
+```
+
+
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 cargos_normalizados %>%
   ggplot(aes(x=cargo_nomarlizado, y=total_de__rendimentos, color=cargo_nomarlizado )) +
   geom_violin() +
@@ -126,6 +164,9 @@ cargos_normalizados %>%
   scale_color_brewer(palette = "Set2") +
   ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo  de funcionário", y = "Remuneração",       title = "Distribuição das remunerações de acordo com o cargo em 2016") 
 ```
+
+
+
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 media_remuneracao_2016_desembargador <- cargos_normalizados %>% 
@@ -146,21 +187,55 @@ A média de remunerção de acordo com cada cargo tem a seguinte distribuição:
 - A média de remuneração de um desembargador em 2016 foi de:  **`r media_remuneracao_2016_desembargador`**
 - A média de remuneração de um pensionitsa em 2016 foi de:  **`r media_remuneracao_2016_pensionista`**
 
-# Os valores gastos com auxílios e benefícios são maiores que os de salários.
+### 30% dos valores gastos com remuneração são com benefícios
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 # Stacked barchart
 stacked_bar_chart <- dados_2016 %>%
   mutate(`Salário` = subsidio, `Beneficios` = total_de__rendimentos - subsidio) %>% 
-  gather(key="type", value = "value", `Salário`, `Beneficios`) %>% 
-  select(value, total_de__rendimentos, type, mes)
+  gather(key="type", value ="value", `Salário`, `Beneficios`) %>% 
+  select(value, type, mes) %>% 
+  group_by(type, mes) %>% 
+  
+  summarise(sum = sum(value)) 
 
+
+total_salario = stacked_bar_chart %>% filter(type == "Salário")%>% pull(sum) 
+total_beneficio  = stacked_bar_chart %>% filter(type =="Beneficios") %>% pull(sum)
+                                                                              
 stacked_bar_chart %>% 
-    ggplot(aes(fill=type, y=total_de__rendimentos, x=as.factor(mes))) +
+    ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
     geom_bar(position="stack", stat="identity") +
     scale_fill_brewer(palette = "Set2") + theme_minimal() +
     labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2016" ) +
     scale_y_continuous(labels = scales::comma) 
 ``` 
+Em dezembro de 2016 o total gasto com salário foi de **`r total_salario`**. Enquanto o total gasto com benefícios foi de **`r total_beneficio`**
+
+### Judiciário x outros trabalhadores
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+dados_2016 %>% 
+  ggplot(aes(x = total_de__rendimentos, y = 12, color = "blabla")) +  
+  theme_minimal() + 
+  scale_color_brewer(palette = "Set2") +
+  geom_point(shape = 124, size = 6, alpha=0.3) + 
+  scale_y_continuous(breaks=seq(1, 11, by = 1)) + 
+  scale_x_log10(labels = scales::comma) + 
+  theme(legend.position = "none") + labs(x = "Valor da remuneração", y = "Mês", title = "Distribuição das remuneração em 2016") + 
+  geom_point(aes(x = 15768), size = 4, color = "#111111", shape = 25) +
+  annotate("text", label = "Remuneração média de 2016", x = 27775.73, y = 13, color = "#111111") +
+  geom_point(aes(x = 12900), size = 4, color = "orange", shape = 25) +
+  annotate("text", label = "Remuneração média Legislativo de 2016", x = 12900, y = 13.2, color = "orange") +
+  geom_point(aes(x = 8100), size = 4, color = "blue", shape = 25) +
+  annotate("text", label = "Remuneração média Executivo de 2016", x = 8100, y = 13.3, color = "blue") +
+  geom_point(aes(x = 1045), size = 4, color = "red", shape = 25) +
+  annotate("text", label = "Salário mínimo", x = 1045, y = 13.4, color = "red") +
+  geom_point(aes(x = 27841), size = 4, color = "purple", shape = 25) +
+  annotate("text", label = "Salário do presidente", x = 27841, y = 13.4, color = "purple")
+```
+
+
 
 ### 2017
 
@@ -220,6 +295,14 @@ dados_12_2019 = read_csv(here("dados/2019-12-datapackage/data.csv"),  col_types 
 dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
 
 #summary(dados_2019)
+```
+
+
+### Dados Brasil.io
+
+```{r}
+dados_brasil_io = read_csv(here("dados/contracheque.csv"))
+dados_brasil_io
 ```
 
 
