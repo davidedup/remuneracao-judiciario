@@ -302,7 +302,6 @@ dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
 
 ```{r}
 dados_brasil_io = read_csv(here("dados/contracheque.csv"))
-dados_brasil_io
 ```
 
 
