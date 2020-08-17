@@ -18,6 +18,8 @@ library(ggplot2)
 theme_set(theme_bw())
 library(genderBR)
 options(scipen=999)
+library(magrittr)
+library(stringr)
 ```
 
 # Dados do Sistema de Justiça Brasileiro
@@ -28,7 +30,7 @@ Devido a grande quantidade de auxílios é importante ter um controle sobre esse
 
 ## Remunerção x salário
 
-As remunerações¹ incluem valores que vão além do salário². Os conhecidos auxílios ou indenizações, são gastos eventuais que podem constituir as remunerações. Auxílios como alimentação, pré escolar, saúde, natalidade, moradia e ajuda de custo, são exemplos de indenizações que podem ser recebidas por funcionários dos tribunais e ministérios públicos do Brasil
+As remunerações¹ incluem valores que vão além do salário². Os conhecidos auxílios ou indenizações, são gastos eventuais que podem constituir as remunerações. Auxílios como alimentação, pré escolar, saúde, natalidade, moradia e ajuda de custo, são exemplos de benefícios que podem ser recebidas por funcionários dos tribunais e ministérios públicos do Brasil
 
 * ¹Remuneração: é a soma do salário mais outras vantagens (indenizações e auxílios).
 
@@ -77,9 +79,9 @@ mediana_salarial_2016 <- dados_2016 %>%pull(subsidio) %>% median() %>% round(2)
 media_salarial_2016 <- dados_2016 %>%pull(subsidio) %>% mean() %>% round(2)
 ```
 
-Analisando o ano de 2016 podemos observar que o salário mais baixo recebido foi de **`r salario_min_2016`** por uma pensionista do	Tribunal de Justiça do Estado do Acre isso é equivalente a 5,75 salários mínimos. Já o salário mais alto foi de **`r salario_max_2016`** recebido por uma desembargadora federal do trabalho, esse valor é equivalente a 66,4 salários mínimos.  
+Analisando o ano de 2016 podemos observar que o salário mais baixo recebido foi de **`r format(salario_min_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`** por uma pensionista do	Tribunal de Justiça do Estado do Acre isso é equivalente a 5,75 salários mínimos. Já o salário mais alto foi de **`r format(salario_max_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`** recebido por uma desembargadora federal do trabalho, esse valor é equivalente a 66,4 salários mínimos.  
 
-A média salarial foi de **`r media_salarial_2016`** com uma mediana de **`r mediana_salarial_2016`** 
+A média salarial foi de **`r format( media_salarial_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`** com uma mediana de **`r format(mediana_salarial_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`** 
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 #Distribuição dos salários
@@ -102,7 +104,41 @@ media_salarial_homem_2016 <- dados_2016 %>% drop_na(genero) %>% filter(genero ==
 
 ```
 
-O total de funcionárias é de **`r total_mulher`**, enquanto o de funcionários é de **`r total_homem`**. Existem o dobro de funcionários do que de funcionárias no sistema de justiça brasileiro em dezembro de 2016. A média salárial para as mulheres é de **`r media_salarial_mulher_2016`** e para os homems é de **`r media_salarial_homem_2016`**.  
+O total de funcionárias é de **`r total_mulher`**, enquanto o de funcionários é de **`r total_homem`**. Existem o dobro de funcionários do que de funcionárias no sistema de justiça brasileiro em dezembro de 2016. A média salárial para as mulheres é de **`r format(media_salarial_mulher_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`** e para os homems é de **`r format( media_salarial_homem_2016, decimal.mark = ",", big.mark = ".", nsmall = 2)`**.
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+n_male = dados_2016 %>% filter(genero == "Male") %>% nrow()
+n_female = dados_2016 %>% filter(genero == "Female") %>% nrow()
+
+# Create test data.
+
+data <- data.frame(
+  category=c("Mulher", "Homem"),
+  count=c(n_female, n_male)
+)
+ 
+# Compute percentages
+data$fraction <- (data$count / sum(data$count)) * 100
+# Compute the cumulative percentages (top of each rectangle)
+data$ymax <- cumsum(data$fraction)
+# Compute the bottom of each rectangle
+data$ymin <- c(0, head(data$ymax, n=-1))
+# Compute label position
+data$labelPosition <- (data$ymax + data$ymin) / 2
+# Compute a good label
+data$label <- paste0(data$category, "\n", round(data$fraction, digits = 0), "%")
+# Make the plot
+ggplot(data, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=category)) +
+  geom_rect() +
+  geom_text(x=3.5, aes(y=labelPosition, label=label, color=category), color = "white", size=3.2) + # x here controls label position (inner / outer)
+  scale_fill_brewer(palette = "Set2") + theme_minimal() +
+  scale_color_brewer(palette = "Set2") +
+  coord_polar(theta="y") +
+  xlim(c(1.8, 4)) +
+  theme_void() + 
+  labs(fill = "Cargo", title="Quantidade de mulheres e homems") +
+  theme(legend.position = "none")
+```
 
 ### Remuneração de acordo com cargo
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
@@ -183,33 +219,10 @@ media_remuneracao_2016_pensionista <- cargos_normalizados %>%
 ```
 A média de remunerção de acordo com cada cargo tem a seguinte distribuição: 
 
-- A média de remuneração de um juiz em 2016 foi de:  **`r media_remuneracao_2016_juiz`**
-- A média de remuneração de um desembargador em 2016 foi de:  **`r media_remuneracao_2016_desembargador`**
-- A média de remuneração de um pensionitsa em 2016 foi de:  **`r media_remuneracao_2016_pensionista`**
+- A média de remuneração de um juiz em 2016 foi de:  **`r format(media_remuneracao_2016_juiz, decimal.mark = ",", big.mark = ".", nsmall = 2)`**
+- A média de remuneração de um desembargador em 2016 foi de:  **`r format(media_remuneracao_2016_desembargador, decimal.mark = ",", big.mark = ".", nsmall = 2) `**
+- A média de remuneração de um pensionitsa em 2016 foi de:  **`r  format(media_remuneracao_2016_pensionista, decimal.mark = ",", big.mark = ".", nsmall = 2) `**
 
-### 30% dos valores gastos com remuneração são com benefícios
-```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
-# Stacked barchart
-stacked_bar_chart <- dados_2016 %>%
-  mutate(`Salário` = subsidio, `Beneficios` = total_de__rendimentos - subsidio) %>% 
-  gather(key="type", value ="value", `Salário`, `Beneficios`) %>% 
-  select(value, type, mes) %>% 
-  group_by(type, mes) %>% 
-  
-  summarise(sum = sum(value)) 
-
-
-total_salario = stacked_bar_chart %>% filter(type == "Salário")%>% pull(sum) 
-total_beneficio  = stacked_bar_chart %>% filter(type =="Beneficios") %>% pull(sum)
-                                                                              
-stacked_bar_chart %>% 
-    ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
-    geom_bar(position="stack", stat="identity") +
-    scale_fill_brewer(palette = "Set2") + theme_minimal() +
-    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2016" ) +
-    scale_y_continuous(labels = scales::comma) 
-``` 
-Em dezembro de 2016 o total gasto com salário foi de **`r total_salario`**. Enquanto o total gasto com benefícios foi de **`r total_beneficio`**
 
 ### Judiciário x outros trabalhadores
 
@@ -235,7 +248,101 @@ dados_2016 %>%
   annotate("text", label = "Salário do presidente", x = 27841, y = 13.4, color = "purple")
 ```
 
+## Desvendando os benefícios
 
+Iremos chamar de benefício qualquer valor recebido pelo funcinário ou funcionária que não seja parte do valor recebido como salário, mas constitue a remuneração do mesmo.
+
+Alguns dos beneficíos são: 
+
+* Diarias:  Reembolso por despesas em serviços externos: alimentação, transporte, hospedagem e outros
+
+* Abono Permanência: Bônus concedido a quem alcançou os requisitos para se aposentar, mas optou por permanecer em atividade
+
+* Auxílio Alimentação: Indeniza gastos com alimentação
+* Auxílio pré escolar: Também conhecido como auxílio creche, objetiva oferecer assistência ao atendimento de seus dependentes em idade pré-escolar
+* Auxílio saúde: Concedido para custeio dos gastos com planos de saúde
+* Auxílio natalidade: Concedido por motivo de nascimento de filho
+* Auxilío moradia: Ressarcimento de despesas comprovadamente realizadas pelo servidor com aluguel de moradia ou com hospedagem em empresa hoteleira
+* Ajuda de custo:  Inclui despesas como mudança de cidade do magistrado e auxílios diversos - como bolsa livro
+* Abono Constitucional de 1/3 de férias
+* Indenização de férias: Recebido quando o magistrado não utiliza todo o período de férias ao qual tem direito
+* Gratificação natalina: 1/12 da remuneração por mês trabalhado, o que totaliza um salário extra por ano
+  
+TODO:  colocar o resto dos benefícios
+  
+### 30% dos valores gastos com remuneração são proveniente de benefícios
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+# Stacked barchart
+stacked_bar_chart <- dados_2016 %>%
+  mutate(`Salário` = subsidio, `Beneficios` = total_de__rendimentos - subsidio) %>% 
+  gather(key="type", value ="value", `Salário`, `Beneficios`) %>% 
+  select(value, type, mes) %>% 
+  group_by(type, mes) %>% 
+  summarise(sum = sum(value)) 
+
+
+total_salario = stacked_bar_chart %>% filter(type == "Salário")%>% pull(sum) 
+total_beneficio  = stacked_bar_chart %>% filter(type =="Beneficios") %>% pull(sum)
+                                                                              
+stacked_bar_chart %>% 
+    ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_brewer(palette = "Set2") + theme_minimal() +
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2016" ) +
+    scale_y_continuous(labels = scales::comma) 
+``` 
+Em dezembro de 2016 o total gasto com salário foi de **`r  format(total_salario, decimal.mark = ",", big.mark = ".", nsmall = 2)`**. Enquanto o total gasto com benefícios foi de **`r  format(total_beneficio, decimal.mark = ",", big.mark = ".", nsmall = 2)`**
+
+### Sumários de alguns benefícios
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+stacked_bar_chart_auxilios <- dados_2016 %>%
+  gather(key="type", value ="value", auxilio_alimentacao, auxilio_pre_escolar, auxilio_saude, auxilio_moradia, ajuda_de_custo, auxilio_natalidade) %>% 
+  select(value, type, mes) %>% 
+  group_by(type, mes) %>% 
+  summarise(sum = sum(value, na.rm=T)) 
+
+stacked_bar_chart_auxilios %>% 
+    ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_brewer(palette = "Set2") + theme_minimal() +
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições dos auxílios em dezembro de 2016" ) +
+    scale_y_continuous(labels = scales::comma) 
+```
+ 
+Os totais gastos com cada tipo de auxílio em dezembro de 2016 estão na tabela abaixo:
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+
+kable(stacked_bar_chart_auxilios, escape = FALSE) %>%
+  kable_styling("striped", full_width = FALSE)
+
+```
+ 
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+stacked_bar_chart_outros <- dados_2016 %>%
+  gather(key="type", value ="value", diarias, abono_de_permanencia, remuneracao_do_orgao_de_origem, abono_contitucional_de_1_3_de_ferias, indenizacao_de_ferias, antecipacao_de_ferias, gratificacao_natalina, 
+antecipacao_de_gratificacao_natalina, substituicao, gratificacao_por_exercicio_cumulativo, gratificacao_por_encargo_curso_concurso) %>% 
+  select(value, type, mes)  %>% 
+  group_by(type, mes) %>% 
+  summarise(sum = sum(value, na.rm=T)) 
+
+
+stacked_bar_chart_outros %>% 
+    ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_brewer(palette = "Set2") + theme_minimal() +
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições de outros benefícios em dezembro de 2016" ) +
+    scale_y_continuous(labels = scales::comma) 
+```
+
+Os totais gastos com cada tipo de benefício de direito eventual e pessoal em dezembro de 2016 estão na tabela abaixo:
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
+kable(stacked_bar_chart_outros, escape = FALSE) %>%
+  kable_styling("striped", full_width = FALSE)
+```
 
 ### 2017
 
