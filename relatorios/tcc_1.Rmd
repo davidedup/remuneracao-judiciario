@@ -773,7 +773,7 @@ ggplot(data, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=category)) +
   geom_text(x=3.5, aes(y=labelPosition, label=label, color=category), color = "white", size=3.2) + # x here controls label position (inner / outer)
   scale_fill_brewer(palette = "Set2") + theme_minimal() +
   scale_color_brewer(palette = "Set2") +
-  coord_polar(theta="y") +COLOCAR GRÁFICO DE DISTRIBUIÇÃO DE REMUNERAÇÃO
+  coord_polar(theta="y") +
   xlim(c(1.8, 4)) +
   theme_void() + 
   labs(fill = "Cargo", title="Quantidade de mulheres e homems") +
@@ -1221,11 +1221,13 @@ dados_juntos %>%
 summary(dados_juntos)
 ```
 ```{r}
+total_maior_que_cem_mil <- dados_juntos %>% filter(total_de_rendimentos >= 100000) %>% nrow()
+
 dados_juntos %>% 
   ggplot(aes(x=ano, y=total_de_rendimentos, color=ano)) +
   geom_boxplot() +
   theme_minimal() +
-  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000, 35000, 50000, 65000, 150000, 300000, 500000, 750000, 1000000, 1500000, 6000000)) +
+  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000, 35000, 50000, 65000,80000, 150000, 300000, 500000, 750000, 1000000, 1500000, 6000000)) +
   theme(legend.position = "none", text = element_text(size=12)) +
   labs(y = "Valor Remuneração", x = "Ano", title = "Distribuições do valor de Remuneração")
 
