@@ -59,7 +59,7 @@ Abaixo temos resumos e visualizações sobre os dados de remunerção dos anos d
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 dados_2016 = read_csv(here("dados/2016-12-datapackage/data.csv"),  col_types = "ccccddddddddddddddddddddddddcdddddddddcdddc")
 dados_2016 <- dados_2016 %>% mutate(mes = 12) %>% mutate(ano = 2016)
-dados_2016 <- dados_2016 %>% filter(direitos_eventuais >= 0, imposto_de_renda >= 0, total_de_descontos >= 0, diarias >= 0, substituicao >= 0, total_de_direitos_eventuais >= 0)
+dados_2016 <- dados_2016 %>% filter(direitos_eventuais >= 0, imposto_de_renda >= 0, total_de_descontos >= 0, diarias >= 0, substituicao >= 0, total_de_direitos_eventuais >= 0) %>% filter(subsidio >= 1045)
 
 dados_2016$genero <- get_gender(dados_2016$nome)
 
@@ -311,10 +311,11 @@ total_beneficio  = stacked_bar_chart %>% filter(type =="Beneficios") %>% pull(su
                                                                               
 stacked_bar_chart %>% 
     ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
-    geom_bar(position="stack", stat="identity") +
+    geom_bar(position="stack", stat="identity", width = 0.4) +
     scale_fill_brewer(palette = "Set2") + theme_minimal() +
-    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2016" ) +
-    scale_y_continuous(labels = scales::comma) 
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Proporção de salário x benefício em dez de 2016" ) +
+    scale_y_continuous(labels = scales::comma) +
+    theme(text = element_text(size=16))
 ``` 
 Em dezembro de 2016 o total gasto com salário foi de **`r  format(total_salario, decimal.mark = ",", big.mark = ".", nsmall = 2)`**. Enquanto o total gasto com benefícios foi de **`r  format(total_beneficio, decimal.mark = ",", big.mark = ".", nsmall = 2)`**
 
@@ -340,13 +341,18 @@ idx <- order(stacked_bar_chart_auxilios$sum, decreasing = TRUE)
 # criar os níveis ordenados
 levels <- stacked_bar_chart_auxilios$type[idx]
 # criar um factor com níveis ordenados
-stacked_bar_chart_auxilios$type <- factor(stacked_bar_chart_auxilios$type, levels=levels, ordered=TRUE)
+#stacked_bar_chart_auxilios$type <- factor(stacked_bar_chart_auxilios$type, levels=levels, ordered=TRUE)
 
 stacked_bar_chart_auxilios %>% 
   ggplot(aes(x=sum, y=type, fill= type)) +
+   scale_fill_brewer(palette = "Set2") +
   theme_minimal() + 
   geom_bar(stat="identity") + 
-  labs(x="Total gasto", y = "Tipo Auxílio", title = "Total gasto com cada tipo de auxílio", fill="Tipo de auxílio") 
+  scale_x_continuous( 
+                                breaks = c(2000000,4000000, 6000000), 
+                                labels = c("2M","4M", "6M")) +
+  labs(x="Total gasto", y = "Tipo Auxílio", title = "Total gasto com cada tipo de auxílio", fill="Tipo de auxílio") +
+   theme(text = element_text(size=16))
 ```
 
  
@@ -396,7 +402,7 @@ dados_12_2017 <- dados_12_2017 %>% mutate(mes = 12) %>% mutate(ano = 2017)
 dados_2017 <- bind_rows(dados_11_2017, dados_12_2017)
 dados_2017$genero <- get_gender(dados_2017$nome)
 
-dados_2017 <- dados_2017 %>% filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos >= 0, previdencia_publica >=0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >=0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >=0)
+dados_2017 <- dados_2017 %>% filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos >= 0, previdencia_publica >=0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >=0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >=0) %>%filter(subsidio >= 1045)
 
 summary(dados_2017)
 ```
@@ -556,9 +562,10 @@ cargos_normalizados %>% filter(total_de_rendimentos < 500000 && subsidio >= 1045
   ggplot(aes(x=cargo_nomarlizado, y=subsidio, color=cargo_nomarlizado )) +
   geom_violin() +
   theme_minimal() + 
-  scale_y_continuous(labels = scales::comma,breaks=c(3000,5000, 15000,27000,30000,40000, 50000, 65000, 100000, 200000, 300000)) + 
+  scale_y_continuous(labels = scales::comma,breaks=c(3000,6000, 15000,27000,30000,40000, 50000, 65000, 100000, 200000, 300000)) + 
   scale_color_brewer(palette = "Set2") +
-  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo  de funcionário", y = "Remuneração",       title = "Distribuição das remunerações de acordo com o cargo em 2017") 
+  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo  de funcionário", y = "Remuneração",       title = "Distribuição salarial de acordo com o cargo em 2017") +
+  theme(text= element_text(size=16))
 ```
 
 
@@ -692,11 +699,11 @@ dados_12_2018$total_de__rendimentos <- NULL
 
 
 
-dados_2018 <- bind_rows(dados_1_2018, dados_2_2018, dados_3_2018, dados_4_2018, dados_5_2018, dados_6_2018, dados_7_2018, dados_9_2018, dados_10_2018, dados_11_2018, dados_12_2018)
+dados_2018 <- bind_rows(dados_1_2018, dados_2_2018, dados_3_2018, dados_4_2018, dados_5_2018, dados_6_2018, dados_7_2018,dados_8_2018, dados_9_2018, dados_10_2018, dados_11_2018, dados_12_2018)
 
 
 
-dados_2018 <- dados_2018 %>% filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos>= 0, previdencia_publica >= 0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >= 0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >= 0)
+dados_2018 <- dados_2018 %>% filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos>= 0, previdencia_publica >= 0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >= 0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >= 0) %>% filter(subsidio >= 1045) %>% filter(total_de_rendimentos >= 1045)
 
 dados_2018$genero <- get_gender(dados_2018$nome)
 
@@ -833,13 +840,16 @@ ggplot(data, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=category)) +
 ```
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
-cargos_normalizados %>% filter(subsidio >= 1045) %>% 
+cargos_normalizados %>% filter(subsidio >= 1045, subsidio <= 65000) %>% 
   ggplot(aes(x=cargo_nomarlizado, y=subsidio, color=cargo_nomarlizado )) +
   geom_violin() +
   theme_minimal() + 
   scale_y_continuous(labels = scales::comma,breaks=c(5000, 10000, 15000, 20000,25000,30000, 35000, 50000, 65000) ) + 
   scale_color_brewer(palette = "Set2") +
-  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo  de funcionário", y = "Remuneração",       title = "Distribuição das remunerações de acordo com o cargo em 2018") 
+  ggbeeswarm::geom_quasirandom(shape=16, alpha= 0.5,position=position_jitter(0.2)) + labs(x="",color= "Tipo de funcionário", y = "Remuneração",       title = "Distribuição salarial de acordo com o cargo em 2018") +
+   theme(text= element_text(size=16))+
+    theme(axis.text.x = element_text(size=13), title = element_text(size = 16 )) 
+
 ```
 
 
@@ -849,7 +859,7 @@ dados_2018 %>%
   ggplot(aes(x = total_de_rendimentos, y = mes, color = "blabla")) +  
   theme_minimal() + 
   scale_color_brewer(palette = "Set2") +
-  geom_point(shape = 124, size = 6, alpha=0.3) + 
+  geom_point(shape = 124, size = 6, alpha=0.9) + 
   scale_y_continuous(breaks=seq(1, 12, by = 1)) + 
   scale_x_log10(labels = scales::comma) + 
   theme(legend.position = "none") + labs(x = "Valor da remuneração", y = "Mês", title = "Distribuição das remuneração em 2018") + 
@@ -864,6 +874,54 @@ dados_2018 %>%
   geom_point(aes(x = 27841), size = 4, color = "purple", shape = 124) +
   annotate("text", label = "Salário do presidente", x = 27841, y = 13.5, color = "purple")
 ```
+
+
+```{r}
+data_outros_salarios <- data.frame(
+  categoria=c("Remuneração média de 2018", "Remuneração média Legislativo de 2016", "Remuneração média Executivo de 2016", "Salário mínimo", "Salário do presidente" ),
+  total_de_rendimentos=c(38199, 12900, 8100, 1045, 27841)
+)
+
+
+
+library(scales)
+l <- dados_2018  %>% 
+  ggplot() + geom_violin(aes(x=month.abb[mes], y=log2(total_de_rendimentos)),
+                                      color="#2D608B",
+                                      fill="#BFD7EA",
+                                      alpha=0.8,
+                                      notch=TRUE,
+                                      notchwidth = 0.8) + 
+    
+                          scale_x_discrete(limits = month.abb) +
+                        scale_y_continuous( 
+                                breaks = c(9.9,12.3, 13.9, 15.2, 16.6, 18.3), 
+                                labels = c("1mil","5mil", "15mil"  , "38mil", "100mil", "500mil")) +
+                          
+  theme(text = element_text(size=15)) +
+  labs(y = "Valor remuneração", x="", title = "Distribuição de remuneração em 2018", color = "Outras remunerações") +
+  geom_hline(data = data_outros_salarios, aes(yintercept = log2(total_de_rendimentos), color = categoria), linetype = "dashed", size = 1) + scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom",legend.direction = "vertical",legend.box.spacing = unit(0, "cm"), legend.text = element_text(size=12), legend.title = element_text(size=12))
+  
+l
+
+ggsave(l, filename = "./plot.png",height = 5, width = 7)
+
+
+#geom_hline(yintercept = 10, linetype="dashed", color = "#0B3954") + 
+  #annotate("text", label = "Salário Mínimo", x = 1.5, y = 10.2, color = "#0B3954") + 
+  #geom_hline(yintercept = 15.22, linetype="dashed", color = "#FF4A47") + 
+  #annotate("text", label = "Remuneração média de 2018", x = 2.5, y = 15.42, color = "#FF4A47")  +
+  #geom_hline(yintercept = 13.65,  linetype="dashed",color = "#96B800") + 
+  #annotate("text", label = "Remuneração média Legislativo de 2016", x = 3.2, y = 13.85, color = "#96B800") +
+  #geom_hline(yintercept = 12.98, linetype="dashed", color = "#8F6593") + 
+  #annotate("text", label = "Remuneração média Executivo de 2016", x = 3.2, y = 13.2, color = "#8F6593") +
+  #geom_hline(yintercept = 14.76,  linetype="dashed", color = "#8f7c00") + 
+  #annotate("text", label = "Salário do presidente", x = 2, y = 14.96, color = "#8f7c00")
+  
+
+```
+
 
 ```{r}
 dados_2018 %>% group_by(mes) %>%  summarise(sum  =  sum (subsidio)) 
@@ -887,11 +945,12 @@ stacked_bar_chart %>%
     ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
     geom_bar(position="stack", stat="identity") +
     scale_fill_brewer(palette = "Set2") + theme_minimal() +
-    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições das remunerações em 2018" ) +
-    scale_y_continuous(labels = scales::comma) 
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Proporção de salário x benefício em 2018" ) +
+    scale_y_continuous(labels = scales::comma) +
+    theme(text = element_text(size=16))
+  
 
-total_salario_2018
-total_beneficio_2018
+
 ``` 
  
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
@@ -905,8 +964,9 @@ stacked_bar_chart_auxilios %>%
     ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
     geom_bar(position="stack", stat="identity") +
     scale_fill_brewer(palette = "Set2") + theme_minimal() +
-    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições dos auxílios em dezembro de 2016" ) +
-    scale_y_continuous(labels = scales::comma) 
+    labs(y = "Valor total", x = "Mês", fill = "Tipo de auxílio", title = "Distribuições dos auxílios em 2018" ) +
+    scale_y_continuous(labels = scales::comma) +
+   theme(text= element_text(size=16))
 ```
 Os totais gastos com cada tipo de auxílio em dezembro de 2016 estão na tabela abaixo:
 
@@ -929,12 +989,18 @@ antecipacao_de_gratificacao_natalina, substituicao, gratificacao_por_exercicio_c
 stacked_bar_chart_outros %>% 
     ggplot(aes(fill=type, y=sum, x=as.factor(mes))) +
     geom_bar(position="stack", stat="identity") +
-    scale_fill_brewer(palette = "Set2") + theme_minimal() +
-    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições de outros benefícios em dezembro de 2018" ) +
-    scale_y_continuous(labels = scales::comma) 
+    scale_fill_brewer(palette = "Set3") + theme_minimal() +
+    labs(y = "Valor total", x = "Mês", fill = "Classificação", title = "Distribuições de outros benefícios em 2018" ) +
+    scale_y_continuous(labels = scales::comma) +
+  theme(text= element_text(size=16), legend.text=element_text(size=10))
 ```
 
 Os totais gastos com cada tipo de benefício de direito eventual e pessoal em dezembro de 2018 estão na tabela abaixo:
+
+```{r}
+sum(dados_2018$gratificacao_por_encargo_curso_concurso)
+```
+
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE, paged.print = FALSE}
 kable(stacked_bar_chart_outros, escape = FALSE) %>%
@@ -955,13 +1021,13 @@ dados_12_2019 = read_csv(here("dados/2019-12-datapackage/data.csv"),  col_types 
 dados_2019 <-  bind_rows(dados_1_2019, dados_2_2019, dados_12_2019)
 
 dados_2019 <-  dados_2019 %>% 
-filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos >= 0, previdencia_publica >=0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >=0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >=0)
+filter(subsidio >= 0, direitos_pessoais >= 0, indenizacoes >= 0, direitos_eventuais >= 0, total_de_rendimentos >= 0, previdencia_publica >=0 , imposto_de_renda >= 0, descontos_diversos >= 0, retencao_por_teto_constitucional >= 0, total_de_descontos >= 0, rendimento_liquido >= 0, diarias >= 0, abono_de_permanencia >= 0, total_de_direitos_pessoais >= 0, auxilio_alimentacao >= 0, auxilio_saude >=0, total_indenizacoes >= 0, abono_contitucional_de_1_3_de_ferias >= 0, antecipacao_de_ferias >= 0, gratificacao_natalina >= 0, antecipacao_de_gratificacao_natalina >= 0, substituicao >= 0, gratificacao_por_exercicio_cumulativo >= 0, total_de_direitos_eventuais >=0) %>% filter(subsidio > 1045)
 
 
 
 dados_2019$genero <- get_gender(dados_2019$nome)
 
-#summary(dados_2019)
+summary(dados_2019)
 ```
 
 
@@ -1202,7 +1268,11 @@ dados_2016$total_de_rendimentos <- dados_2016$total_de__rendimentos
   
 dados_juntos <- bind_rows(dados_2016, dados_2017, dados_2018, dados_2019)
 
+dados_juntos_copy <- bind_rows(dados_2016, dados_2017, dados_2018, dados_2019)
+
 dados_juntos$ano <- as.factor(dados_juntos$ano)
+
+qauntidade_abaixo_minimo  <- dados_juntos %>%  filter(subsidio < 1045)
 
 quan_salario_zero <- dados_juntos %>%  filter(subsidio == 0)
 
@@ -1214,12 +1284,19 @@ dados_juntos %>%
   ggplot(aes(x=ano, y=subsidio, color=ano)) +
   geom_boxplot() +
   theme_minimal() +
-  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000,25000,28500, 35000, 50000, 65000)) +
+  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
   theme(legend.position = "none", text = element_text(size=12)) +
-  labs(y = "Valor Salário", x = "Ano", title = "Distribuições do valor de salário")
+  labs(y = "Valor Salário em R$", x = "Ano", title = "Distribuições do valor de salário") + 
+  theme(axis.text.x = element_text(size=16), title = element_text(size = 16 ), axis.text.y = element_text(size=15))
 
 summary(dados_juntos)
 ```
+
+```{r}
+dados_juntos %>% group_by(nome) %>% summarize(count=n())
+```
+
+
 ```{r}
 total_maior_que_cem_mil <- dados_juntos %>% filter(total_de_rendimentos >= 100000) %>% nrow()
 
@@ -1227,9 +1304,10 @@ dados_juntos %>%
   ggplot(aes(x=ano, y=total_de_rendimentos, color=ano)) +
   geom_boxplot() +
   theme_minimal() +
-  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000, 35000, 50000, 65000,80000, 150000, 300000, 500000, 750000, 1000000, 1500000, 6000000)) +
+  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 20000, 30000, 50000, 80000, 150000, 300000, 500000, 750000, 1500000, 6000000)) +
   theme(legend.position = "none", text = element_text(size=12)) +
-  labs(y = "Valor Remuneração", x = "Ano", title = "Distribuições do valor de Remuneração")
+  labs(y = "Valor Remuneração", x = "Ano", title = "Distribuições do valor de Remuneração") +
+  theme(text= element_text(size=16))
 
 ```
 
@@ -1237,7 +1315,7 @@ dados_juntos %>%
 ```{r}
 
 cargos_normalizados <- dados_juntos %>% 
-  mutate( cargo_nomarlizado =
+  mutate( cargo_normalizado =
     case_when(
       str_detect(str_to_lower(cargo), "desembargador") ~ "Desembargador",
       str_detect(str_to_lower(cargo), "des") ~ "Desembargador",
@@ -1250,10 +1328,10 @@ cargos_normalizados <- dados_juntos %>%
 
 total_funcionarios <- cargos_normalizados %>% nrow()
 
-total_juiz = cargos_normalizados %>% filter(cargo_nomarlizado == "Juiz") %>% nrow()
-total_desembagador = cargos_normalizados %>% filter(cargo_nomarlizado == "Desembargador") %>% nrow()
-total_pensionista = cargos_normalizados %>% filter(cargo_nomarlizado == "Pensionista") %>% nrow()
-total_outros = cargos_normalizados %>% filter(cargo_nomarlizado == "Outros") %>% nrow()
+total_juiz = cargos_normalizados %>% filter(cargo_normalizado == "Juiz") %>% nrow()
+total_desembagador = cargos_normalizados %>% filter(cargo_normalizado == "Desembargador") %>% nrow()
+total_pensionista = cargos_normalizados %>% filter(cargo_normalizado == "Pensionista") %>% nrow()
+total_outros = cargos_normalizados %>% filter(cargo_normalizado == "Outros") %>% nrow()
 
 # Create test data.
 data <- data.frame(
@@ -1268,6 +1346,26 @@ data %>%
  
 
 ```
+```{r}
+plot_cargos_boxplot <- cargos_normalizados %>% group_by(cargo_normalizado, mes, ano) %>% summarise(total = n())
+
+plot_cargos_boxplot %>%
+  ggplot(aes(x=cargo_normalizado, y=total, color=cargo_normalizado)) +
+  geom_boxplot() +
+  theme_minimal() +
+  scale_y_continuous(breaks=c(1000,2000,3000,5000,7000,10000,13000,15000)) +
+  theme(, text = element_text(size=12)) +
+  labs(y = "Quantidade de funcionários", x = "Tipo de Cargo", title = "Distribuição da quantidade para cada tipo de cargo", color="Tipo de cargo") + 
+  theme(text= element_text(size=16))
+```
+```{r}
+dados_juntos %>%  drop_na(genero) %>% filter(genero == "Male") %>% summary()
+```
+```{r}
+dados_juntos %>%  drop_na(genero) %>% filter(genero == "Female") %>% summary()
+```
+
+%>% 
 
 ```{r}
 
@@ -1304,18 +1402,57 @@ data  %>%
   labs(x="Ano", y = "Quantidade", title = "Distribuição de gênero", fill="Gênero")
 
 ```
-
 ```{r}
-genero_sem_NA <- dados_juntos %>%  
-  drop_na(genero)
+quantidade_mediana_genero <-  dados_juntos %>% drop_na(genero) %>%  group_by(genero, mes, ano) %>% summarise(total = n())
 
-genero_sem_NA %>% 
-  ggplot(aes(x=ano, y=subsidio, color=genero)) +
+quantidade_mediana_genero2 <- quantidade_mediana_genero %>% group_by(ano, genero) %>%  summarise(mediano =  median(total))
+
+quantidade_mediana_genero2 <- quantidade_mediana_genero2 %>%  mutate(genero_pt = ifelse(genero == "Male", "Homem", "Mulher"))
+
+quantidade_mediana_genero2  %>%  
+  ggplot(aes(x=ano, y=mediano, fill=genero_pt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge())+
+  theme_minimal() +
+   labs(x="Ano", y = "Quantidade", title = "Distribuição de gênero", fill="Gênero")
+
+```
+```{r}
+totais_genero_mes_ano <- dados_juntos %>% drop_na(genero) %>% mutate(genero_pt = ifelse(genero == "Male", "Homem", "Mulher")) %>%  group_by(genero_pt, mes, ano) %>% summarise(total = n())
+
+totais_genero_mes_ano %>%
+  ggplot(aes(x=ano, y=total, color=genero_pt)) +
   geom_boxplot() +
   theme_minimal() +
-  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000,25000,28500, 35000, 50000, 65000)) +
   theme(, text = element_text(size=12)) +
-  labs(y = "Valor Salário", x = "Ano", title = "Distribuições do valor de salário de acordo com gênero")
+  labs(y = "Quantidade de funcionários", x = "Tipo de Cargo", title = "Distribuição da quantidade para cada tipo de cargo", color="Tipo de cargo") + 
+  theme(text= element_text(size=16))
+```
+```{r}
+dados_juntos %>% 
+  ggplot(aes(x=ano, y=total, color=genero)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(text = element_text(size=16)) +
+  labs(y = "Quantidade de funcionários", x = "Faixa de valor de remuneração", title = "Distribuição da quantidade para cada tipo de cargo") 
+  
+
+
+```
+ 
+
+```{r}
+# Total NA: 194,962
+genero_sem_NA <- dados_juntos %>%  
+  drop_na(genero) %>% mutate(genero_pt = ifelse(genero == "Male", "Homem", "Mulher"))
+
+genero_sem_NA %>% 
+  ggplot(aes(x=ano, y=subsidio, color=genero_pt)) +
+  geom_boxplot() +
+  theme_minimal() +
+  scale_y_log10(labels = scales::comma, breaks=c(1050, 3000, 5000, 10000, 15000, 20000,25000, 35000, 50000, 65000)) +
+  theme(, text = element_text(size=12)) +
+  labs(y = "Valor Salário", x = "Ano", title = "Distribuições do valor salárial por gênero", color = "Gênero") +
+  theme(text= element_text(size=16))
 ```
 
 

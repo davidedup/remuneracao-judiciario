@@ -6,3 +6,5 @@ Qual a remuneração média de um juiz? Quais benefícios são mais recebidos po
 
 Este é um trabalho associado ao trabalho de conclusão de curso (TCC) na Universidade Federal de Campina Grande.
 
+Existe um arquivo PDF com os resultados finais da pesquisa realizada com os dados em questão. 
+
